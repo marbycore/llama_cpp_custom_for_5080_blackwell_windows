@@ -1,6 +1,6 @@
-# ⚡ Llama.cpp Blackwell Custom Build (v1.4.0)
+# ⚡ Llama.cpp Blackwell Custom Build (v1.5.0)
 
-**An ultra-optimized, native Blackwell (sm_120a/sm_120) compilation of llama.cpp designed to squeeze every single TFLOPS from the NVIDIA RTX 5080 Laptop/Desktop GPUs.**
+**An ultra-optimized, native Blackwell (sm_120a/sm_120) portable release of llama.cpp designed to squeeze max TFLOPS from NVIDIA RTX 5080 Laptop/Desktop GPUs.**
 
 ---
 

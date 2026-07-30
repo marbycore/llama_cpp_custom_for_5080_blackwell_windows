@@ -147,6 +147,24 @@ $cGpu = New-Setting "GPU Layers (-ngl)" 240 @("99 - Max FPS", "60 - Balanced", "
 $cPar = New-Setting "Parallel Slots (-np)" 465 @("1 - Solo Yo", "2 - Con Hermes", "4 - Multi") 0 "Sesiones simultaneas"
 $cBat = New-Setting "uBatch Size" 690 @("Default", "1024", "2048", "4096") 0 "Velocidad Blackwell"
 
+# ── KV Cache selector (nuevo: Q4_0 / FP4 nativo Blackwell) ──
+$lblKv = New-Object Windows.Forms.Label
+$lblKv.Text = "KV Cache Type:"; $lblKv.Location = New-Object Drawing.Point(20, 145); $lblKv.AutoSize = $true; $lblKv.ForeColor = [Drawing.Color]::LightGoldenrodYellow
+$pnl.Controls.Add($lblKv)
+
+$cKv = New-Object Windows.Forms.ComboBox
+$cKv.Location = New-Object Drawing.Point(160, 143); $cKv.Width = 200; $cKv.DropDownStyle = "DropDownList"
+$cKv.BackColor = [Drawing.Color]::FromArgb(50, 50, 50); $cKv.ForeColor = [Drawing.Color]::LightGoldenrodYellow; $cKv.FlatStyle = "Flat"
+@("q4_0 (Recomendado)", "f4 (Blackwell FP4 nativo)", "f16 (Máx. Calidad)") | ForEach-Object { $cKv.Items.Add($_) | Out-Null }
+$cKv.SelectedIndex = 0
+$pnl.Controls.Add($cKv)
+
+$lblKvTip = New-Object Windows.Forms.Label
+$lblKvTip.Text = "q4_0: -60% VRAM vs f16`nf4: -75% VRAM (Tensor Cores FP4)"; $lblKvTip.ForeColor = [Drawing.Color]::Gray
+$lblKvTip.Location = New-Object Drawing.Point(370, 143); $lblKvTip.Size = New-Object Drawing.Size(280, 40); $lblKvTip.Font = New-Object Drawing.Font("Segoe UI", 8)
+$pnl.Controls.Add($lblKvTip)
+
+
 # ── Opción LAN y Tavily ──
 $chkLan = New-Object Windows.Forms.CheckBox
 $chkLan.Text = "EXPONER SERVIDOR EN RED LOCAL (LAN)"; $chkLan.Checked = $EXPOSE_LAN
@@ -171,9 +189,10 @@ $btn.Add_Click({
         $conf | ConvertTo-Json | Out-File $CONFIG_PATH -Force
         $modelPath = $dgv.SelectedRows[0].Cells[3].Value
         $ctx = $cCtx.SelectedItem.Split(" ")[0]; $ngl = $cGpu.SelectedItem.Split(" ")[0]; $np = $cPar.SelectedItem.Split(" ")[0]; $ub = $cBat.SelectedItem.Split(" ")[0]
+        $kvRaw = $cKv.SelectedItem.Split(" ")[0]  # e.g. "q4_0", "f4", "f16"
         $lan = if ($chkLan.Checked) { "1" }else { "0" }
         $tavily = if ($chkTavily.Checked) { "1" }else { "0" }
-        $line = "$modelPath|$ctx|$ngl|$np|$ub|$($txtHermes.Text)|$lan|$tavily"
+        $line = "$modelPath|$ctx|$ngl|$np|$ub|$($txtHermes.Text)|$lan|$tavily|$kvRaw"
         [System.IO.File]::WriteAllText($RESULT_FILE, $line)
         $form.DialogResult = [Windows.Forms.DialogResult]::OK; $form.Close()
     })
@@ -183,7 +202,7 @@ $form.Controls.Add($btn)
 if ($Test) {
     if ($dgv.Rows.Count -eq 0) { Write-Error "No modelos"; exit 1 }
     $lanStr = if ($EXPOSE_LAN) { "1" }else { "0" }
-    $line = "$($dgv.Rows[0].Cells[3].Value)|131072|99|1|Default|$HERMES_CFG|$lanStr"
+    $line = "$($dgv.Rows[0].Cells[3].Value)|131072|99|1|Default|$HERMES_CFG|$lanStr|0|q4_0"
     [System.IO.File]::WriteAllText($RESULT_FILE, $line)
     exit 0
 }

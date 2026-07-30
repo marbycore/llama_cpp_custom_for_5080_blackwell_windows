@@ -65,18 +65,23 @@ if (Test-Path "build") {
 # 4. Configurar CMake con las optimizaciones máximas para RTX 5080 Blackwell
 Write-Host "`n  [*] Configurando proyecto CMake para arquitectura sm_120a..." -ForegroundColor Cyan
 Write-Host "      - Backend: CUDA 13.1+" -ForegroundColor Gray
-Write-Host "      - Target Arch: sm_120a (Blackwell Tensor Cores)" -ForegroundColor Gray
-Write-Host "      - Flash Attention 3: Habilitado (-DLLAMA_FLASH_ATTN=ON)" -ForegroundColor Gray
+Write-Host "      - Target Arch: sm_120a (Blackwell Real PTX)" -ForegroundColor Gray
+Write-Host "      - Flash Attention Universal: Habilitado (-DGGML_CUDA_FA_ALL_QUANTS=ON)" -ForegroundColor Gray
 Write-Host "      - CUDA Graphs: Habilitado (-DGGML_CUDA_GRAPHS=ON)" -ForegroundColor Gray
+Write-Host "      - Optimizaciones MMV_Y / Peer Batch: Habilitados (-DGGML_CUDA_MMV_Y=1)" -ForegroundColor Gray
 
 $cmakeArgs = @(
     "-B", "build",
     "-G", "Visual Studio 17 2022",
     "-A", "x64",
     "-DGGML_CUDA=ON",
-    "-DCMAKE_CUDA_ARCHITECTURES=120a",
+    "-DCMAKE_CUDA_ARCHITECTURES=120a-real",
     "-DLLAMA_FLASH_ATTN=ON",
+    "-DGGML_CUDA_FA_ALL_QUANTS=ON",
+    "-DGGML_CUDA_MMV_Y=1",
+    "-DGGML_CUDA_PEER_MAX_BATCH_SIZE=256",
     "-DGGML_CUDA_GRAPHS=ON",
+    "-DGGML_NATIVE=ON",
     "-DCMAKE_BUILD_TYPE=Release"
 )
 
@@ -87,13 +92,18 @@ if ($LASTEXITCODE -ne 0) {
     $cmakeArgsAlt = @(
         "-B", "build",
         "-DGGML_CUDA=ON",
-        "-DCMAKE_CUDA_ARCHITECTURES=120a",
+        "-DCMAKE_CUDA_ARCHITECTURES=120a-real",
         "-DLLAMA_FLASH_ATTN=ON",
+        "-DGGML_CUDA_FA_ALL_QUANTS=ON",
+        "-DGGML_CUDA_MMV_Y=1",
+        "-DGGML_CUDA_PEER_MAX_BATCH_SIZE=256",
         "-DGGML_CUDA_GRAPHS=ON",
+        "-DGGML_NATIVE=ON",
         "-DCMAKE_BUILD_TYPE=Release"
     )
     & cmake @cmakeArgsAlt
 }
+
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "  [X] ERROR al configurar CMake. Verifica tu instalación de CUDA Toolkit y Visual Studio."

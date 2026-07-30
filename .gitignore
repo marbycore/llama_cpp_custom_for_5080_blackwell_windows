@@ -6,8 +6,11 @@
 !/Llama-Server_RTX5080.bat
 !/Llama-Server_RTX5080_MTP.bat
 !/Llama-Server_GTX1070.bat
+!/optimizar_gpu_5080.bat
+!/restaurar_gpu_5080.bat
 !/compilar_para_5080.ps1
 !/compilar_para_5080.bat
+config_server.json
 *.bin
 *.d
 *.dll

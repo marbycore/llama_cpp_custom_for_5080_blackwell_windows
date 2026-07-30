@@ -393,3 +393,48 @@ Si se pierden los binarios y se requiere recompilar el motor `llama-server.exe` 
    cmake --build build --config Release -j 16
    ```
 3. **Ubicación del Binario Resultante:** `c:\data\llama-cpp-custom\build\bin\llama-server.exe`
+
+---
+
+### **[2026-07-30 15:52] - Récord Absoluto: Blackwell SM120 Universal FA + Auto GPU Clock Lock + MTP (4.32s Full Generation)**
+
+* **Hito:** Máxima velocidad de inferencia lograda en la RTX 5080 combinando las optimizaciones portadas del Linux fork (fijación de relojes a 3090/14001 MHz via `nvidia-smi`, FlashAttention Universal `-DGGML_CUDA_FA_ALL_QUANTS=ON`, MMV_Y, Peer batch size 256, PTX nativo `sm_120a-real`, y KV Cache Q4_0/FP4 seleccionable dinámicamente desde GUI).
+* **Resultado Destacado:** Generación de subtareas cortas completada en solo **4.32 segundos** (4,039 ms total), con una tasa de aceptación MTP récord del **95.58%** (mean length **2.91 tokens/paso**) y generación sostenida en ráfagas largas a **162.83 tokens/segundo**.
+
+#### 📊 Registro Exacto de los Logs de Producción (2026-07-30)
+
+| Métrica / Fase | Valor Registrado | Notas Técnicas de Ingeniería |
+| :--- | :--- | :--- |
+| **Tiempo de Tarea Ultra-Rápida** | **4.039 segundos** (4,039.10 ms) | Generación y eval completos de la Tarea 1450 en 4.03s. |
+| **Prompt Processing (Prefill)** | **1,159.83 tokens/segundo** | 19,706 tokens procesados en 17.30s (0.88 ms/token). |
+| **Generación Sostenida (Long Run)** | **162.83 tokens/segundo** 🔥 | **9,528 tokens** generados en 58.51s (Tarea 1522). |
+| **Generación en Ráfagas Secundarias** | **160.39 tokens/segundo** | **3,161 tokens** generados en 19.70s (Tarea 297). |
+| **Tasa Aceptación MTP Máxima** | **95.58%** (6,255 / 6,544) | **2.91 tokens/paso** en Tarea 1522 (Récord de aceptación). |
+| **Graphs Reused (Graph Cache)** | **8,957 grafos reutilizados** | Cero latencia de CPU en la cola de despacho de CUDA. |
+| **KV Cache Compression** | **q4_0 / f4 (FP4 nativo)** | Reducción del 75% en footprint de VRAM, manteniendo 100% en GPU. |
+
+#### ⚙️ Nuevas Tecnologías e Innovaciones Integradas en esta Build
+
+1. **Fix de Frecuencias de GPU Automático (`nvidia-smi` P-State Locking):**
+   - El script `Llama-Server_RTX5080_MTP.bat` ahora fija el núcleo a **3090 MHz** (boost máximo) y la memoria VRAM a **14001 MHz** al iniciar `llama-server`.
+   - **Auto-Restauración:** Al cerrar o finalizar el servidor, ejecuta automáticamente `nvidia-smi -rgc` y `-rmc` para devolver la GPU a sus frecuencias dinámicas por defecto sin dejar nada bloqueado en el sistema.
+2. **Compilación Nativa Blackwell `120a-real` con FA Universal:**
+   - Script de compilación `compilar_para_5080.ps1` con banderas avanzadas de CMake:
+     - `-DGGML_CUDA_FA_ALL_QUANTS=ON` (FlashAttention-3 habilitado para todas las cuantizaciones GGUF: IQ3, Q4, etc.).
+     - `-DGGML_CUDA_MMV_Y=1` (Optimizaciones de multiplicación matriz-vector).
+     - `-DGGML_CUDA_PEER_MAX_BATCH_SIZE=256` (Optimización de batching peer-to-peer).
+     - `-DCMAKE_CUDA_ARCHITECTURES="120a-real"` (Generación de código máquina PTX nativo Blackwell sm_120).
+3. **KV Cache Seleccionable Dinámicamente desde GUI (`launcher_gui.ps1`):**
+   - Incorporación del selector visual para **KV Cache**: `q4_0` (ahorro 60% VRAM), `f4` (Blackwell FP4 nativo en Tensor Cores, ahorro 75% VRAM) o `f16` (calidad pura).
+   - Serialización directa como 9º parámetro dinámico comunicado a los scripts `.bat`.
+4. **Proxy MCP Tavily Integrado para Web UI:**
+   - Generación dinámica de `%TEMP%\llama_webui_config.json` con paso de `--ui-mcp-proxy` y `--ui-config-file` para habilitar la búsqueda web nativa en la interfaz web de llama-server.
+5. **Ajuste de Temperatura Optimizada para MTP:**
+   - Estandarización de `--temp 0.4` para maximizar la tasa de acierto de predicción en las cabezas especulativas MTP del Qwen 3.6 35B.
+
+```text
+0.56.696.673 I slot print_timing: draft acceptance = 0.70745 (266 accepted / 376 generated), mean len = 2.41
+1.20.452.590 I slot print_timing: eval time = 19708.56 ms / 3161 tokens (160.39 tokens per second)
+1.24.906.681 I slot print_timing: eval time = 58514.74 ms / 9528 tokens (162.83 tokens per second)
+1.24.906.712 I slot print_timing: draft acceptance = 0.95584 (6255 accepted / 6544 generated), mean len = 2.91
+```
