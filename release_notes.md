@@ -1,3 +1,59 @@
+# ⚡ Release v1.6.0: Portable Zero-Install Distribution
+
+An ultra-portable, performance-tuned distribution of `llama.cpp` compile targeted for **NVIDIA RTX 50-Series (Blackwell sm_120a / sm_120)** platforms. **No installation required**: unzip and run.
+
+**Archivo / File:** `Llama-cpp-Blackwell-RTX5080-v1.6.0-portable-win-cuda13.1-x64.zip` (403 MB)
+
+---
+
+## 🇺🇸 ENGLISH
+
+### What's included
+- **Engine**: llama.cpp built with MSVC 19.44 (VS2022), CUDA 13.1, native Blackwell `sm_120a-real`, Flash Attention, MTP speculative decoding (`draft-mtp n=2`), Q4_0/FP4 KV cache, static BoringSSL (portable HTTPS)
+- **CUDA cublas libraries bundled** (`cublas64_13.dll` + `cublasLt64_13.dll`): no CUDA Toolkit installation needed, works with any up-to-date NVIDIA driver
+- **Launchers**: `Llama-Server_RTX5080_MTP.bat` (recommended) and `Llama-Server_RTX5080.bat` - fully path-agnostic (`%~dp0`), work from any folder, USB or external drive
+- **GUI selector**: browse any folder with `.gguf` models, context/GPU/slots/batch/KV cache options, LAN exposure toggle
+- **Tavily MCP**: auto-configured for the Web UI when the `TAVILY_API_KEY` environment variable exists
+- **Clickable URLs** in the banner: localhost, rotating LAN IP and the stable device-name URL (`http://<COMPUTERNAME>:5050`), plus a live filter that rewrites the server's `0.0.0.0` listening line
+
+### How to use (3 steps)
+1. Unzip anywhere
+2. Double-click `Llama-Server_RTX5080_MTP.bat` and accept the UAC prompt (GPU clock lock)
+3. Pick your `.gguf` model in the GUI and launch. Open the printed URL in a browser.
+
+See `README-PORTABLE.md` inside the zip for the full bilingual guide and troubleshooting.
+
+### Performance (RTX 5080 Laptop, Qwen3.6-35B-A3B IQ3_XXS + MTP)
+- Sustained generation: ~146-171 t/s (peak 171.28 t/s)
+- Prefill: up to ~1,706 t/s
+- Agentic landing-page workflow: 36/36 checks, ~3:54 total
+
+---
+
+## 🇪🇸 ESPAÑOL
+
+### Qué incluye
+- **Motor**: llama.cpp compilado con MSVC 19.44 (VS2022), CUDA 13.1, Blackwell nativo `sm_120a-real`, Flash Attention, decodificación especulativa MTP (`draft-mtp n=2`), KV Cache Q4_0/FP4, BoringSSL estático (HTTPS portable)
+- **Librerías CUDA incluidas** (`cublas64_13.dll` + `cublasLt64_13.dll`): no requiere instalar CUDA Toolkit, funciona con cualquier driver NVIDIA actualizado
+- **Launchers**: `Llama-Server_RTX5080_MTP.bat` (recomendado) y `Llama-Server_RTX5080.bat` - totalmente independientes de la ruta (`%~dp0`), funcionan desde cualquier carpeta, USB o disco externo
+- **Selector gráfico**: explora cualquier carpeta con modelos `.gguf`, opciones de contexto/GPU/slots/batch/KV cache, toggle de red LAN
+- **Tavily MCP**: auto-configurado para la Web UI cuando existe la variable de entorno `TAVILY_API_KEY`
+- **URLs clickeables** en el banner: localhost, IP LAN rotativa y la URL estable por nombre de equipo (`http://<NOMBRE-DEL-PC>:5050`), más un filtro en vivo que reescribe la línea `0.0.0.0` del server
+
+### Cómo usar (3 pasos)
+1. Descomprime donde quieras
+2. Doble clic en `Llama-Server_RTX5080_MTP.bat` y acepta el aviso UAC (fijación del reloj GPU)
+3. Elige tu modelo `.gguf` en la GUI y lanza. Abre la URL impresa en tu navegador.
+
+Ver `README-PORTABLE.md` dentro del zip para la guía bilingüe completa y solución de problemas.
+
+### Rendimiento (RTX 5080 Laptop, Qwen3.6-35B-A3B IQ3_XXS + MTP)
+- Generación sostenida: ~146-171 t/s (pico 171.28 t/s)
+- Prefill: hasta ~1,706 t/s
+- Workflow agéntico de landing page: 36/36 checks, ~3:54 total
+
+---
+
 # ⚡ Release v1.4.1: Blackwell Elite Orchestration, Speculative Caching & Hermes Sync
 
 An ultra-portable, performance-tuned distribution of `llama.cpp` compile targeted for **NVIDIA RTX 50-Series (Blackwell sm_120a / sm_120)** platforms.
