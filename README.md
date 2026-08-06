@@ -1,604 +1,291 @@
-# llama.cpp
+# ⚡ Llama.cpp for 5080 Blackwell Custom Build Marbycore
 
-![llama](https://raw.githubusercontent.com/ggml-org/llama.brand/refs/heads/master/cover/llama-cpp/cover-llama-cpp-dark.svg)
+> **Performance highlights (RTX 5080 Blackwell, Qwen3.6-35B-A3B IQ3_XXS)**  
+> 196 tokens/second peak decode burst (MTP, local session measurement)  
+> 146.3 tokens/second sustained generation (18,565 tokens continuous)  
+> ~1,700 tokens/second prompt processing prefill speed  
+> 95.58% MTP draft acceptance rate (2.91 tokens/step multiplier)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/github/v/release/ggml-org/llama.cpp)](https://github.com/ggml-org/llama.cpp/releases)
-[![Server](https://github.com/ggml-org/llama.cpp/actions/workflows/server.yml/badge.svg)](https://github.com/ggml-org/llama.cpp/actions/workflows/server.yml)
-[![Docker](https://github.com/ggml-org/llama.cpp/actions/workflows/docker.yml/badge.svg)](https://github.com/ggml-org/llama.cpp/actions/workflows/docker.yml)
-[![Winget](https://github.com/ggml-org/llama.cpp/actions/workflows/winget.yml/badge.svg)](https://github.com/ggml-org/llama.cpp/actions/workflows/winget.yml)
+[![Architecture: sm_120a](https://img.shields.io/badge/Architecture-NVIDIA%20Blackwell%20sm__120a-76B900?style=for-the-badge&logo=nvidia)](https://developer.nvidia.com)
+[![Generation Burst: 196 t/s](https://img.shields.io/badge/Burst%20Speed-196%20t%2Fs-FF6F00?style=for-the-badge&logo=lightning)](analisis_rendimiento_qwen35b.md)
+[![Sustained: 146.3 t/s](https://img.shields.io/badge/Sustained-146.3%20t%2Fs-00E676?style=for-the-badge&logo=speedtest)](analisis_rendimiento_qwen35b.md)
+[![CUDA: 13.1 Native](https://img.shields.io/badge/CUDA-13.1%20Native-76B900?style=for-the-badge&logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
+[![Release: v1.6.0](https://img.shields.io/badge/Release-v1.6.0%20Portable-00B0FF?style=for-the-badge)](https://github.com/marbycore/llama_cpp_custom_for_5080_blackwell_windows/releases)
 
-[Manifesto](https://github.com/ggml-org/llama.cpp/discussions/205) / [ggml](https://github.com/ggml-org/ggml) / [ops](https://github.com/ggml-org/llama.cpp/blob/master/docs/ops.md) / [maintainer PRs](https://github.com/ggml-org/llama.cpp/issues?q=is%3Apr%20is%3Aopen%20draft%3AFalse%20(author%3Argerganov%20OR%20author%3AKitaitiMakoto%20OR%20author%3Adanbev%20OR%20author%3Aaldehir%20OR%20author%3Amax-krasnyansky%20OR%20author%3ACISC%20OR%20author%3Aggerganov%20OR%20author%3Aam17an%20OR%20author%3Abartowski1182%20OR%20author%3Ahipudding%20OR%20author%3AServeurpersoCom%20OR%20author%3Apwilkin%20OR%20author%3Areeselevine%20OR%20author%3Angxson%20OR%20author%3Ajeffbolznv%20OR%20author%3A0cc4m%20OR%20author%3Aangt%20OR%20author%3AIMbackK%20OR%20author%3Aarthw%20OR%20author%3AJohannesGaessler%20OR%20author%3AORippler%20OR%20author%3Aruixiang63%20OR%20author%3Axctan%20OR%20author%3Aallozaur%20OR%20author%3Ayomaytk%20OR%20author%3Aaendk%20OR%20author%3Agaugarg-nv%20OR%20author%3Ataronaeo%20OR%20author%3Aforforever73%20OR%20author%3Alhez%20OR%20author%3Anetrunnereve%20OR%20author%3Afairydreaming)%20sort%3Aupdated-desc)
+![Shell - Minimal Resource Footprint](llama_ccp_shell.jpg)
 
-LLM inference in C/C++
+**A native Blackwell (`sm_120a` / `sm_120`) zero-configuration portable release of llama.cpp for NVIDIA RTX 5080 Laptop & Desktop GPUs.**
 
-## Recent API changes
+---
 
-- [Changelog for `libllama` API](https://github.com/ggml-org/llama.cpp/issues/9289)
-- [Changelog for `llama-server` REST API](https://github.com/ggml-org/llama.cpp/issues/9291)
+# 🇺🇸 ENGLISH VERSION
 
-## Hot topics
+## 🎯 What Is This?
 
-- **Hugging Face cache migration: models downloaded with `-hf` are now stored in the standard Hugging Face cache directory, enabling sharing with other HF tools.**
-- **[guide : using the new WebUI of llama.cpp](https://github.com/ggml-org/llama.cpp/discussions/16938)**
-- [guide : running gpt-oss with llama.cpp](https://github.com/ggml-org/llama.cpp/discussions/15396)
-- [[FEEDBACK] Better packaging for llama.cpp to support downstream consumers 🤗](https://github.com/ggml-org/llama.cpp/discussions/15313)
-- Support for the `gpt-oss` model with native MXFP4 format has been added | [PR](https://github.com/ggml-org/llama.cpp/pull/15091) | [Collaboration with NVIDIA](https://blogs.nvidia.com/blog/rtx-ai-garage-openai-oss) | [Comment](https://github.com/ggml-org/llama.cpp/discussions/15095)
-- Multimodal support arrived in `llama-server`: [#12898](https://github.com/ggml-org/llama.cpp/pull/12898) | [documentation](./docs/multimodal.md)
-- VS Code extension for FIM completions: https://github.com/ggml-org/llama.vscode
-- Vim/Neovim plugin for FIM completions: https://github.com/ggml-org/llama.vim
-- Hugging Face Inference Endpoints now support GGUF out of the box! https://github.com/ggml-org/llama.cpp/discussions/9669
-- Hugging Face GGUF editor: [discussion](https://github.com/ggml-org/llama.cpp/discussions/9268) | [tool](https://huggingface.co/spaces/CISCai/gguf-editor)
-- WebGPU support is now available in the browser, see a blog/demo introducing it [here](https://reeselevine.github.io/llamas-on-the-web/).
+A **Windows-first, double-click-and-run** llama.cpp distribution for NVIDIA RTX 5080 (Blackwell) with:
 
-----
+- **Native `sm_120a-real` kernels** (CUDA 13.1) — the same engine, compiled for the exact silicon.
+- **MTP speculative decoding** (`draft-mtp n=2`) auto-detected from the model's name — no flags to remember.
+- An **ultra-light C# dashboard** to set everything visually, plus a **headless CLI mode** for agents and automation.
+- An **Ollama-compatible shim** so third-party apps (e.g. Open WebUI, Continue, offgrid) think they're talking to a real Ollama server.
+- **Tavily web search** (MCP proxy) with the API key read from an environment variable — never exposed in files or URLs.
 
-## Quick start
+> [!IMPORTANT]
+> **All benchmark numbers in this repo were achieved with the `Qwen3.6-35B-A3B` IQ3_XXS (3.44 bpw) GGUF** — the quant that fits comfortably in 16 GB VRAM while keeping the KV cache for long context, and that delivers the highest MTP acceptance rates.
 
-Getting started with llama.cpp is straightforward. Here are several ways to install it on your machine:
+## 🚀 Why This Custom Build? (Ditching LM Studio)
 
-- Install `llama.cpp` using [brew, nix, winget, or conda-forge](docs/install.md)
-- Run with Docker - see our [Docker documentation](docs/docker.md)
-- Download pre-built binaries from the [releases page](https://github.com/ggml-org/llama.cpp/releases)
-- Build from source by cloning this repository - check out [our build guide](docs/build.md)
+Generic engines like LM Studio execute generic CUDA binaries inside heavy UI frameworks. This fork targets **NVIDIA Blackwell (`sm_120a-real`)** at the PTX level: native Tensor Core instructions, zero-overhead CUDA Graph execution, Universal FlashAttention-3 for all quantizations, and automatic GPU P-state clock locking.
 
-Once installed, you'll need a model to work with. Head to the [Obtaining and quantizing models](#obtaining-and-quantizing-models) section to learn more.
+| Performance Metric | LM Studio | Standard llama.cpp | **Custom Blackwell Build** |
+| :--- | :--- | :--- | :--- |
+| **CUDA Target** | Generic fallback | Standard | **Native `sm_120a-real` (Blackwell PTX)** |
+| **GPU Clock Locking** | Dynamic (throttles) | Manual | **Auto P-State Lock (3090 MHz / 14001 MHz)** ⚡ |
+| **FlashAttention-3** | FP16 only | FP16 / Partial | **Universal FA3 (all GGUFs)** |
+| **Speculative Engine** | Disabled | N-Gram only | **Draft-MTP (`n=2`) + N-Gram** |
+| **Decoding Speed (35B)** | 56.80 t/s | 108.00 t/s | **146.3 t/s sustained / 196 t/s burst** |
+| **Prompt Prefill (IQ3)** | ~1,000 t/s | ~1,200 t/s | **~1,700 t/s (peaks 2,196 t/s)** |
 
-Example command:
+## 🧩 Key Features
 
-```sh
-# Use a local model file
-llama-cli -m my_model.gguf
+### 1. 🤖 Ollama-Compatible Shim (Zero-Overhead Middleware)
+`ollama_shim.js` listens on port **11434** (Ollama's default) and transparently proxies to `llama-server` on **5050**. Third-party apps that only speak Ollama's API — Open WebUI, Continue, offgrid, etc. — connect as if a real Ollama were running. No code changes needed on their side.
+- **Tavily integration**: the shim intercepts tool/function calls and answers them with real web-search results from Tavily, so agentic apps get live internet search without extra configuration.
 
-# Or download and run a model directly from Hugging Face
-llama-cli -hf ggml-org/gemma-3-1b-it-GGUF
+![Shim - Ollama-compatible proxy with Tavily](blakcwell_shim.jpg)
 
-# Launch OpenAI-compatible API server
-llama-server -hf ggml-org/gemma-3-1b-it-GGUF
+### 2. 🌐 Direct LAN Access via llama.cpp Web UI
+You don't need the shim for direct access: the built-in `llama-server` Web UI is exposed at `http://<device>:5050` (and `http://<LAN-IP>:5050` when LAN exposure is enabled in the dashboard). Perfect for testing from another phone, tablet or machine on your network — including the Tavily MCP search in the Web UI.
+
+### 3. 🔍 Tavily Web Search (MCP) — API Key Never Exposed
+- Enabled by default through the MCP proxy (`--ui-mcp-proxy`).
+- The key is read from the `TAVILY_API_KEY` **environment variable** — it is never written to files, configs or URLs, and the dashboard shows only its last 6 characters.
+- With no key set, everything still works — just without web search.
+
+### 4. 🎛️ Ultra-Light C# Dashboard (`launcher_gui.ps1`)
+A Windows Forms GUI where you set **everything** visually:
+
+![Dashboard](UI_dashboard_llama_ccp.jpg)
+
+- Model picker (browses your GGUF folders, shows size + MTP capability per model).
+- Context, GPU layers, parallel slots, uBatch.
+- KV cache type (`q4_0` / `f16`) and **draft KV cache** for MTP.
+- Sampling sliders: temperature, top_p, top_k, min_p, presence & repeat penalties — defaults are the **tested sweet spot** (`temp 0.4`, `min_p 0.0`).
+- LAN exposure toggle and Tavily enable.
+- **Remembers your last choice** and **auto-sets MTP** when the selected model has MTP in its name — the fastest config with one click.
+
+### 5. 💨 Minimal Resource Footprint
+Unlike other model runners (which keep heavy UI frameworks resident), this launch flow:
+1. Opens the light dashboard → picks config → clicks **Launch**.
+2. The dashboard closes and **only `llama-server` keeps running in a minimal console window**.
+3. Zero GUI overhead while serving: all VRAM/CPU goes to inference.
+
+You get the convenience of a GUI at setup time and the lightness of llama.cpp at runtime.
+
+### 6. 🤖 Headless Mode (for Agents, Tests & Benchmarks)
+The same launcher works as a **CLI/API** without any GUI:
+
+```powershell
+# Generate a launch configuration (auto-detects MTP from the model name)
+powershell -File launcher_gui.ps1 -Headless -ModelPath "C:\models\Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf" -Ctx 131072 -Ngl 99 -Np 1 -Kv q4_0 -KvD default -Lan
+
+# Check status / wait for the server to be ready
+powershell -File launcher_gui.ps1 -Headless -Status
+powershell -File launcher_gui.ps1 -Headless -WaitReady -Port 5050 -TimeoutSec 180
 ```
 
-## Description
+This opens the door for CI/CD pipelines, benchmark harnesses and AI agents to spin up the server and drive it with plain commands.
 
-The main goal of `llama.cpp` is to enable LLM inference with minimal setup and state-of-the-art performance on a wide
-range of hardware - locally and in the cloud.
+### 7. 🚀 MTP Auto-Detection & "Sweet Spot" Sampling
+- The launcher reads the model name/folder and enables `--spec-type draft-mtp --spec-draft-n-max 2` automatically when the model is MTP-capable (e.g. `Qwen3.6-35B-A3B-MTP-*`); otherwise it falls back to `ngram-map-k`.
+- Sampling defaults are the result of a controlled A/B test (8 runs, 3 configs): `temp 0.4 + min_p 0.0` produced **2/2 functional carts in under 4 minutes** in the agentic workflow — see `analisis_rendimiento_qwen35b.md`.
 
-- Plain C/C++ implementation without any dependencies
-- Apple silicon is a first-class citizen - optimized via ARM NEON, Accelerate and Metal frameworks
-- AVX, AVX2, AVX512 and AMX support for x86 architectures
-- RVV, ZVFH, ZFH, ZICBOP and ZIHINTPAUSE support for RISC-V architectures
-- 1.5-bit, 2-bit, 3-bit, 4-bit, 5-bit, 6-bit, and 8-bit integer quantization for faster inference and reduced memory use
-- Custom CUDA kernels for running LLMs on NVIDIA GPUs (support for AMD GPUs via HIP and Moore Threads GPUs via MUSA)
-- Vulkan and SYCL backend support
-- CPU+GPU hybrid inference to partially accelerate models larger than the total VRAM capacity
+## 🏆 Benchmark Highlights (Qwen3.6-35B-A3B IQ3_XXS)
 
-The `llama.cpp` project is the main playground for developing new features for the [ggml](https://github.com/ggml-org/ggml) library.
+| Metric | Value | Source |
+| :--- | :--- | :--- |
+| **Decode burst** | **196 t/s** | Peak short burst (MTP) |
+| **Sustained generation** | **146.3 t/s** (18,565 tokens) | Task 391, production log |
+| **MTP acceptance** | **95.58%** (2.91 tokens/step) | Task 1522 |
+| **Prefill** | **~1,700 t/s** (peaks 2,196 t/s) | 19,223-token prompt |
+| **Agentic workflow** | **3 min 54 s** landing page (36/36 checks) | 2026-08-03 |
 
-<details>
-<summary>Models</summary>
+Full methodology and per-task logs: [`analisis_rendimiento_qwen35b.md`](analisis_rendimiento_qwen35b.md).
 
-Typically finetunes of the base models below are supported as well.
+## 📦 Quick Start (Zero-Config, Double-Click)
 
-Instructions for adding support for new models: [HOWTO-add-model.md](docs/development/HOWTO-add-model.md)
+1. Download `Llama-cpp-Blackwell-RTX5080-v1.6.0-portable-win-cuda13.1-x64.zip` from [Releases](https://github.com/marbycore/llama_cpp_custom_for_5080_blackwell_windows/releases).
+2. Unzip anywhere (USB drive works).
+3. Double-click **`Llama-Server_RTX5080.bat`** (accept the UAC prompt for GPU clock locking).
+4. Pick your model in the GUI — it even finds your `.gguf` files for you.
+5. Click **Launch**. Done. No command line required.
 
-#### Text-only
+## 🛠️ Build From Source
 
-- [X] LLaMA 🦙
-- [x] LLaMA 2 🦙🦙
-- [x] LLaMA 3 🦙🦙🦙
-- [X] [Mistral 7B](https://huggingface.co/mistralai/Mistral-7B-v0.1)
-- [x] [Mixtral MoE](https://huggingface.co/models?search=mistral-ai/Mixtral)
-- [x] [DBRX](https://huggingface.co/databricks/dbrx-instruct)
-- [x] [Jamba](https://huggingface.co/ai21labs)
-- [X] [Falcon](https://huggingface.co/models?search=tiiuae/falcon)
-- [X] [Chinese LLaMA / Alpaca](https://github.com/ymcui/Chinese-LLaMA-Alpaca) and [Chinese LLaMA-2 / Alpaca-2](https://github.com/ymcui/Chinese-LLaMA-Alpaca-2)
-- [X] [Vigogne (French)](https://github.com/bofenghuang/vigogne)
-- [X] [BERT](https://github.com/ggml-org/llama.cpp/pull/5423)
-- [X] [Koala](https://bair.berkeley.edu/blog/2023/04/03/koala/)
-- [X] [Baichuan 1 & 2](https://huggingface.co/models?search=baichuan-inc/Baichuan) + [derivations](https://huggingface.co/hiyouga/baichuan-7b-sft)
-- [X] [Aquila 1 & 2](https://huggingface.co/models?search=BAAI/Aquila)
-- [X] [Starcoder models](https://github.com/ggml-org/llama.cpp/pull/3187)
-- [X] [Refact](https://huggingface.co/smallcloudai/Refact-1_6B-fim)
-- [X] [MPT](https://github.com/ggml-org/llama.cpp/pull/3417)
-- [X] [Bloom](https://github.com/ggml-org/llama.cpp/pull/3553)
-- [x] [Yi models](https://huggingface.co/models?search=01-ai/Yi)
-- [X] [StableLM models](https://huggingface.co/stabilityai)
-- [x] [Deepseek models](https://huggingface.co/models?search=deepseek-ai/deepseek)
-- [x] [Qwen models](https://huggingface.co/models?search=Qwen/Qwen)
-- [x] [PLaMo-13B](https://github.com/ggml-org/llama.cpp/pull/3557)
-- [x] [Phi models](https://huggingface.co/models?search=microsoft/phi)
-- [x] [PhiMoE](https://github.com/ggml-org/llama.cpp/pull/11003)
-- [x] [GPT-2](https://huggingface.co/gpt2)
-- [x] [Orion 14B](https://github.com/ggml-org/llama.cpp/pull/5118)
-- [x] [InternLM2](https://huggingface.co/models?search=internlm2)
-- [x] [CodeShell](https://github.com/WisdomShell/codeshell)
-- [x] [Gemma](https://ai.google.dev/gemma)
-- [x] [Mamba](https://github.com/state-spaces/mamba)
-- [x] [Grok-1](https://huggingface.co/keyfan/grok-1-hf)
-- [x] [Xverse](https://huggingface.co/models?search=xverse)
-- [x] [Command-R models](https://huggingface.co/models?search=CohereForAI/c4ai-command-r)
-- [x] [SEA-LION](https://huggingface.co/models?search=sea-lion)
-- [x] [GritLM-7B](https://huggingface.co/GritLM/GritLM-7B) + [GritLM-8x7B](https://huggingface.co/GritLM/GritLM-8x7B)
-- [x] [OLMo](https://allenai.org/olmo)
-- [x] [OLMo 2](https://allenai.org/olmo)
-- [x] [OLMoE](https://huggingface.co/allenai/OLMoE-1B-7B-0924)
-- [x] [Granite models](https://huggingface.co/collections/ibm-granite/granite-code-models-6624c5cec322e4c148c8b330)
-- [x] [GPT-NeoX](https://github.com/EleutherAI/gpt-neox) + [Pythia](https://github.com/EleutherAI/pythia)
-- [x] [Snowflake-Arctic MoE](https://huggingface.co/collections/Snowflake/arctic-66290090abe542894a5ac520)
-- [x] [Smaug](https://huggingface.co/models?search=Smaug)
-- [x] [Poro 34B](https://huggingface.co/LumiOpen/Poro-34B)
-- [x] [Bitnet b1.58 models](https://huggingface.co/1bitLLM)
-- [x] [Flan T5](https://huggingface.co/models?search=flan-t5)
-- [x] [Open Elm models](https://huggingface.co/collections/apple/openelm-instruct-models-6619ad295d7ae9f868b759ca)
-- [x] [ChatGLM3-6b](https://huggingface.co/THUDM/chatglm3-6b) + [ChatGLM4-9b](https://huggingface.co/THUDM/glm-4-9b) + [GLMEdge-1.5b](https://huggingface.co/THUDM/glm-edge-1.5b-chat) + [GLMEdge-4b](https://huggingface.co/THUDM/glm-edge-4b-chat)
-- [x] [GLM-4-0414](https://huggingface.co/collections/THUDM/glm-4-0414-67f3cbcb34dd9d252707cb2e)
-- [x] [SmolLM](https://huggingface.co/collections/HuggingFaceTB/smollm-6695016cad7167254ce15966)
-- [x] [EXAONE-3.0-7.8B-Instruct](https://huggingface.co/LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct)
-- [x] [FalconMamba Models](https://huggingface.co/collections/tiiuae/falconmamba-7b-66b9a580324dd1598b0f6d4a)
-- [x] [Jais](https://huggingface.co/inceptionai/jais-13b-chat)
-- [x] [Bielik-11B-v2.3](https://huggingface.co/collections/speakleash/bielik-11b-v23-66ee813238d9b526a072408a)
-- [x] [RWKV-7](https://huggingface.co/collections/shoumenchougou/rwkv7-gxx-gguf)
-- [x] [RWKV-6](https://github.com/BlinkDL/RWKV-LM)
-- [x] [QRWKV-6](https://huggingface.co/recursal/QRWKV6-32B-Instruct-Preview-v0.1)
-- [x] [GigaChat-20B-A3B](https://huggingface.co/ai-sage/GigaChat-20B-A3B-instruct)
-- [X] [Trillion-7B-preview](https://huggingface.co/trillionlabs/Trillion-7B-preview)
-- [x] [Ling models](https://huggingface.co/collections/inclusionAI/ling-67c51c85b34a7ea0aba94c32)
-- [x] [Liquid LFM2 models](https://huggingface.co/collections/LiquidAI/lfm2)
-- [x] [Liquid LFM2.5 models](https://huggingface.co/collections/LiquidAI/lfm25)
-- [x] [Liquid Nanos](https://huggingface.co/collections/LiquidAI/liquid-nanos)
-- [x] [Hunyuan models](https://huggingface.co/collections/tencent/hunyuan-dense-model-6890632cda26b19119c9c5e7)
-- [x] [BailingMoeV2 (Ring/Ling 2.0) models](https://huggingface.co/collections/inclusionAI/ling-v2-68bf1dd2fc34c306c1fa6f86)
-- [x] [Mellum models](https://huggingface.co/JetBrains/models?search=mellum)
+Want to compile it yourself? Everything is here:
 
-#### Multimodal
-
-- [x] [LLaVA 1.5 models](https://huggingface.co/collections/liuhaotian/llava-15-653aac15d994e992e2677a7e), [LLaVA 1.6 models](https://huggingface.co/collections/liuhaotian/llava-16-65b9e40155f60fd046a5ccf2)
-- [x] [BakLLaVA](https://huggingface.co/models?search=SkunkworksAI/Bakllava)
-- [x] [Obsidian](https://huggingface.co/NousResearch/Obsidian-3B-V0.5)
-- [x] [ShareGPT4V](https://huggingface.co/models?search=Lin-Chen/ShareGPT4V)
-- [x] [MobileVLM 1.7B/3B models](https://huggingface.co/models?search=mobileVLM)
-- [x] [Yi-VL](https://huggingface.co/models?search=Yi-VL)
-- [x] [Mini CPM](https://huggingface.co/models?search=MiniCPM)
-- [x] [Moondream](https://huggingface.co/vikhyatk/moondream2)
-- [x] [Bunny](https://github.com/BAAI-DCAI/Bunny)
-- [x] [GLM-EDGE](https://huggingface.co/models?search=glm-edge)
-- [x] [Qwen2-VL](https://huggingface.co/collections/Qwen/qwen2-vl-66cee7455501d7126940800d)
-- [x] [LFM2-VL](https://huggingface.co/collections/LiquidAI/lfm2-vl-68963bbc84a610f7638d5ffa)
-
-</details>
-
-<details>
-<summary>Bindings</summary>
-
-- Python: [ddh0/easy-llama](https://github.com/ddh0/easy-llama)
-- Python: [abetlen/llama-cpp-python](https://github.com/abetlen/llama-cpp-python)
-- Go: [go-skynet/go-llama.cpp](https://github.com/go-skynet/go-llama.cpp)
-- Node.js: [withcatai/node-llama-cpp](https://github.com/withcatai/node-llama-cpp)
-- JS/TS (llama.cpp server client): [lgrammel/modelfusion](https://modelfusion.dev/integration/model-provider/llamacpp)
-- JS/TS (Programmable Prompt Engine CLI): [offline-ai/cli](https://github.com/offline-ai/cli)
-- JavaScript/Wasm (works in browser): [tangledgroup/llama-cpp-wasm](https://github.com/tangledgroup/llama-cpp-wasm)
-- Typescript/Wasm (nicer API, available on npm): [ngxson/wllama](https://github.com/ngxson/wllama)
-- Ruby: [yoshoku/llama_cpp.rb](https://github.com/yoshoku/llama_cpp.rb)
-- Ruby: [docusealco/rllama](https://github.com/docusealco/rllama)
-- Rust (more features): [edgenai/llama_cpp-rs](https://github.com/edgenai/llama_cpp-rs)
-- Rust (nicer API): [mdrokz/rust-llama.cpp](https://github.com/mdrokz/rust-llama.cpp)
-- Rust (more direct bindings): [utilityai/llama-cpp-rs](https://github.com/utilityai/llama-cpp-rs)
-- Rust (automated build from crates.io): [ShelbyJenkins/llm_client](https://github.com/ShelbyJenkins/llm_client)
-- C#/.NET: [SciSharp/LLamaSharp](https://github.com/SciSharp/LLamaSharp)
-- C#/VB.NET (more features - community license): [LM-Kit.NET](https://docs.lm-kit.com/lm-kit-net/index.html)
-- Scala 3: [donderom/llm4s](https://github.com/donderom/llm4s)
-- Clojure: [phronmophobic/llama.clj](https://github.com/phronmophobic/llama.clj)
-- React Native: [mybigday/llama.rn](https://github.com/mybigday/llama.rn)
-- Java: [kherud/java-llama.cpp](https://github.com/kherud/java-llama.cpp)
-- Java: [QuasarByte/llama-cpp-jna](https://github.com/QuasarByte/llama-cpp-jna)
-- Zig: [deins/llama.cpp.zig](https://github.com/Deins/llama.cpp.zig)
-- Flutter/Dart: [netdur/llama_cpp_dart](https://github.com/netdur/llama_cpp_dart)
-- Flutter: [xuegao-tzx/Fllama](https://github.com/xuegao-tzx/Fllama)
-- PHP (API bindings and features built on top of llama.cpp): [distantmagic/resonance](https://github.com/distantmagic/resonance) [(more info)](https://github.com/ggml-org/llama.cpp/pull/6326)
-- Guile Scheme: [guile_llama_cpp](https://savannah.nongnu.org/projects/guile-llama-cpp)
-- Swift [srgtuszy/llama-cpp-swift](https://github.com/srgtuszy/llama-cpp-swift)
-- Swift [ShenghaiWang/SwiftLlama](https://github.com/ShenghaiWang/SwiftLlama)
-- Delphi [Embarcadero/llama-cpp-delphi](https://github.com/Embarcadero/llama-cpp-delphi)
-- Go (no CGo needed): [hybridgroup/yzma](https://github.com/hybridgroup/yzma)
-- Android: [llama.android](/examples/llama.android)
-
-</details>
-
-<details>
-<summary>UIs</summary>
-
-*(to have a project listed here, it should clearly state that it depends on `llama.cpp`)*
-
-- [AI Sublime Text plugin](https://github.com/yaroslavyaroslav/OpenAI-sublime-text) (MIT)
-- [BonzAI App](https://apps.apple.com/us/app/bonzai-your-local-ai-agent/id6752847988) (proprietary)
-- [cztomsik/ava](https://github.com/cztomsik/ava) (MIT)
-- [Dot](https://github.com/alexpinel/Dot) (GPL)
-- [eva](https://github.com/ylsdamxssjxxdd/eva) (MIT)
-- [iohub/collama](https://github.com/iohub/coLLaMA) (Apache-2.0)
-- [janhq/jan](https://github.com/janhq/jan) (AGPL)
-- [johnbean393/Sidekick](https://github.com/johnbean393/Sidekick) (MIT)
-- [KanTV](https://github.com/zhouwg/kantv?tab=readme-ov-file) (Apache-2.0)
-- [KodiBot](https://github.com/firatkiral/kodibot) (GPL)
-- [llama.vim](https://github.com/ggml-org/llama.vim) (MIT)
-- [LARS](https://github.com/abgulati/LARS) (AGPL)
-- [Llama Assistant](https://github.com/vietanhdev/llama-assistant) (GPL)
-- [LlamaLib](https://github.com/undreamai/LlamaLib) (Apache-2.0)
-- [LLMFarm](https://github.com/guinmoon/LLMFarm?tab=readme-ov-file) (MIT)
-- [LLMUnity](https://github.com/undreamai/LLMUnity) (MIT)
-- [LMStudio](https://lmstudio.ai/) (proprietary)
-- [LocalAI](https://github.com/mudler/LocalAI) (MIT)
-- [LostRuins/koboldcpp](https://github.com/LostRuins/koboldcpp) (AGPL)
-- [MindMac](https://mindmac.app) (proprietary)
-- [MindWorkAI/AI-Studio](https://github.com/MindWorkAI/AI-Studio) (FSL-1.1-MIT)
-- [Mobile-Artificial-Intelligence/maid](https://github.com/Mobile-Artificial-Intelligence/maid) (MIT)
-- [Mozilla-Ocho/llamafile](https://github.com/Mozilla-Ocho/llamafile) (Apache-2.0)
-- [nat/openplayground](https://github.com/nat/openplayground) (MIT)
-- [nomic-ai/gpt4all](https://github.com/nomic-ai/gpt4all) (MIT)
-- [ollama/ollama](https://github.com/ollama/ollama) (MIT)
-- [oobabooga/text-generation-webui](https://github.com/oobabooga/text-generation-webui) (AGPL)
-- [PocketPal AI](https://github.com/a-ghorbani/pocketpal-ai) (MIT)
-- [psugihara/FreeChat](https://github.com/psugihara/FreeChat) (MIT)
-- [ptsochantaris/emeltal](https://github.com/ptsochantaris/emeltal) (MIT)
-- [pythops/tenere](https://github.com/pythops/tenere) (AGPL)
-- [ramalama](https://github.com/containers/ramalama) (MIT)
-- [semperai/amica](https://github.com/semperai/amica) (MIT)
-- [withcatai/catai](https://github.com/withcatai/catai) (MIT)
-- [Autopen](https://github.com/blackhole89/autopen) (GPL)
-
-</details>
-
-<details>
-<summary>Tools</summary>
-
-- [akx/ggify](https://github.com/akx/ggify) – download PyTorch models from Hugging Face Hub and convert them to GGML
-- [akx/ollama-dl](https://github.com/akx/ollama-dl) – download models from the Ollama library to be used directly with llama.cpp
-- [crashr/gppm](https://github.com/crashr/gppm) – launch llama.cpp instances utilizing NVIDIA Tesla P40 or P100 GPUs with reduced idle power consumption
-- [gpustack/gguf-parser](https://github.com/gpustack/gguf-parser-go/tree/main/cmd/gguf-parser) - review/check the GGUF file and estimate the memory usage
-- [Styled Lines](https://marketplace.unity.com/packages/tools/generative-ai/styled-lines-llama-cpp-model-292902) (proprietary licensed, async wrapper of inference part for game development in Unity3d with pre-built Mobile and Web platform wrappers and a model example)
-- [unslothai/unsloth](https://github.com/unslothai/unsloth) – 🦥 exports/saves fine-tuned and trained models to GGUF (Apache-2.0)
-
-</details>
-
-<details>
-<summary>Infrastructure</summary>
-
-- [Paddler](https://github.com/intentee/paddler) - Open-source LLMOps platform for hosting and scaling AI in your own infrastructure
-- [GPUStack](https://github.com/gpustack/gpustack) - Manage GPU clusters for running LLMs
-- [llama_cpp_canister](https://github.com/onicai/llama_cpp_canister) - llama.cpp as a smart contract on the Internet Computer, using WebAssembly
-- [llama-swap](https://github.com/mostlygeek/llama-swap) - transparent proxy that adds automatic model switching with llama-server
-- [Kalavai](https://github.com/kalavai-net/kalavai-client) - Crowdsource end to end LLM deployment at any scale
-- [llmaz](https://github.com/InftyAI/llmaz) - ☸️ Easy, advanced inference platform for large language models on Kubernetes.
-- [LLMKube](https://github.com/defilantech/llmkube) - Kubernetes operator for llama.cpp with multi-GPU and Apple Silicon Metal
-  support"
-</details>
-
-<details>
-<summary>Games</summary>
-
-- [Lucy's Labyrinth](https://github.com/MorganRO8/Lucys_Labyrinth) - A simple maze game where agents controlled by an AI model will try to trick you.
-
-</details>
-
-
-## Supported backends
-
-| Backend | Target devices |
-| --- | --- |
-| [Metal](docs/build.md#metal-build) | Apple Silicon |
-| [BLAS](docs/build.md#blas-build) | All |
-| [BLIS](docs/backend/BLIS.md) | All |
-| [SYCL](docs/backend/SYCL.md) | Intel GPU |
-| [OpenVINO [In Progress]](docs/backend/OPENVINO.md) | Intel CPUs, GPUs, and NPUs |
-| [MUSA](docs/build.md#musa) | Moore Threads GPU |
-| [CUDA](docs/build.md#cuda) | Nvidia GPU |
-| [HIP](docs/build.md#hip) | AMD GPU |
-| [ZenDNN](docs/build.md#zendnn) | AMD CPU |
-| [Vulkan](docs/build.md#vulkan) | GPU |
-| [CANN](docs/build.md#cann) | Ascend NPU |
-| [OpenCL](docs/backend/OPENCL.md) | Adreno GPU |
-| [IBM zDNN](docs/backend/zDNN.md) | IBM Z & LinuxONE |
-| [WebGPU](docs/build.md#webgpu) | All |
-| [RPC](https://github.com/ggml-org/llama.cpp/tree/master/tools/rpc) | All |
-| [Hexagon [In Progress]](docs/backend/snapdragon/README.md) | Snapdragon |
-| [VirtGPU](docs/backend/VirtGPU.md) | VirtGPU APIR |
-
-## Obtaining and quantizing models
-
-The [Hugging Face](https://huggingface.co) platform hosts a [number of LLMs](https://huggingface.co/models?library=gguf&sort=trending) compatible with `llama.cpp`:
-
-- [Trending](https://huggingface.co/models?library=gguf&sort=trending)
-- [LLaMA](https://huggingface.co/models?sort=trending&search=llama+gguf)
-
-You can either manually download the GGUF file or directly use any `llama.cpp`-compatible models from [Hugging Face](https://huggingface.co/) or other model hosting sites, by using this CLI argument: `-hf <user>/<model>[:quant]`. For example:
-
-```sh
-llama-cli -hf ggml-org/gemma-3-1b-it-GGUF
+```powershell
+git clone https://github.com/marbycore/llama_cpp_custom_for_5080_blackwell_windows.git <RUTA_REPO>
+cd <RUTA_REPO>
+powershell -ExecutionPolicy Bypass -File compilar_para_5080.ps1
 ```
 
-By default, the CLI would download from Hugging Face, you can switch to other options with the environment variable `MODEL_ENDPOINT`. The `MODEL_ENDPOINT` must point to a Hugging Face compatible API endpoint.
-
-After downloading a model, use the CLI tools to run it locally - see below.
-
-`llama.cpp` requires the model to be stored in the [GGUF](https://github.com/ggml-org/ggml/blob/master/docs/gguf.md) file format. Models in other data formats can be converted to GGUF using the `convert_*.py` Python scripts in this repo.
-
-The Hugging Face platform provides a variety of online tools for converting, quantizing and hosting models with `llama.cpp`:
-
-- Use the [GGUF-my-repo space](https://huggingface.co/spaces/ggml-org/gguf-my-repo) to convert to GGUF format and quantize model weights to smaller sizes
-- Use the [GGUF-my-LoRA space](https://huggingface.co/spaces/ggml-org/gguf-my-lora) to convert LoRA adapters to GGUF format (more info: https://github.com/ggml-org/llama.cpp/discussions/10123)
-- Use the [GGUF-editor space](https://huggingface.co/spaces/CISCai/gguf-editor) to edit GGUF meta data in the browser (more info: https://github.com/ggml-org/llama.cpp/discussions/9268)
-- Use the [Inference Endpoints](https://ui.endpoints.huggingface.co/) to directly host `llama.cpp` in the cloud (more info: https://github.com/ggml-org/llama.cpp/discussions/9669)
-
-To learn more about model quantization, [read this documentation](tools/quantize/README.md)
-
-## [`llama-cli`](tools/cli)
-
-#### A CLI tool for accessing and experimenting with most of `llama.cpp`'s functionality.
-
-- <details open>
-    <summary>Run in conversation mode</summary>
-
-    Models with a built-in chat template will automatically activate conversation mode. If this doesn't occur, you can manually enable it by adding `-cnv` and specifying a suitable chat template with `--chat-template NAME`
-
-    ```bash
-    llama-cli -m model.gguf
-
-    # > hi, who are you?
-    # Hi there! I'm your helpful assistant! I'm an AI-powered chatbot designed to assist and provide information to users like you. I'm here to help answer your questions, provide guidance, and offer support on a wide range of topics. I'm a friendly and knowledgeable AI, and I'm always happy to help with anything you need. What's on your mind, and how can I assist you today?
-    #
-    # > what is 1+1?
-    # Easy peasy! The answer to 1+1 is... 2!
-    ```
-
-    </details>
-
-- <details>
-    <summary>Run in conversation mode with custom chat template</summary>
-
-    ```bash
-    # use the "chatml" template (use -h to see the list of supported templates)
-    llama-cli -m model.gguf -cnv --chat-template chatml
-
-    # use a custom template
-    llama-cli -m model.gguf -cnv --in-prefix 'User: ' --reverse-prompt 'User:'
-    ```
-
-    </details>
-
-- <details>
-    <summary>Constrain the output with a custom grammar</summary>
-
-    ```bash
-    llama-cli -m model.gguf -n 256 --grammar-file grammars/json.gbnf -p 'Request: schedule a call at 8pm; Command:'
-
-    # {"appointmentTime": "8pm", "appointmentDetails": "schedule a a call"}
-    ```
-
-    The [grammars/](grammars/) folder contains a handful of sample grammars. To write your own, check out the [GBNF Guide](grammars/README.md).
-
-    For authoring more complex JSON grammars, check out https://grammar.intrinsiclabs.ai/
-
-    </details>
-
-
-## [`llama-server`](tools/server)
-
-#### A lightweight, [OpenAI API](https://github.com/openai/openai-openapi) compatible, HTTP server for serving LLMs.
-
-- <details open>
-    <summary>Start a local HTTP server with default configuration on port 8080</summary>
-
-    ```bash
-    llama-server -m model.gguf --port 8080
-
-    # Basic web UI can be accessed via browser: http://localhost:8080
-    # Chat completion endpoint: http://localhost:8080/v1/chat/completions
-    ```
-
-    </details>
-
-- <details>
-    <summary>Support multiple-users and parallel decoding</summary>
-
-    ```bash
-    # up to 4 concurrent requests, each with 4096 max context
-    llama-server -m model.gguf -c 16384 -np 4
-    ```
-
-    </details>
-
-- <details>
-    <summary>Enable speculative decoding</summary>
-
-    ```bash
-    # the draft.gguf model should be a small variant of the target model.gguf
-    llama-server -m model.gguf -md draft.gguf
-    ```
-
-    </details>
-
-- <details>
-    <summary>Serve an embedding model</summary>
-
-    ```bash
-    # use the /embedding endpoint
-    llama-server -m model.gguf --embedding --pooling cls -ub 8192
-    ```
-
-    </details>
-
-- <details>
-    <summary>Serve a reranking model</summary>
-
-    ```bash
-    # use the /reranking endpoint
-    llama-server -m model.gguf --reranking
-    ```
-
-    </details>
-
-- <details>
-    <summary>Constrain all outputs with a grammar</summary>
-
-    ```bash
-    # custom grammar
-    llama-server -m model.gguf --grammar-file grammar.gbnf
-
-    # JSON
-    llama-server -m model.gguf --grammar-file grammars/json.gbnf
-    ```
-
-    </details>
-
-
-## [`llama-perplexity`](tools/perplexity)
-
-#### A tool for measuring the [perplexity](tools/perplexity/README.md) [^1] (and other quality metrics) of a model over a given text.
-
-- <details open>
-    <summary>Measure the perplexity over a text file</summary>
-
-    ```bash
-    llama-perplexity -m model.gguf -f file.txt
-
-    # [1]15.2701,[2]5.4007,[3]5.3073,[4]6.2965,[5]5.8940,[6]5.6096,[7]5.7942,[8]4.9297, ...
-    # Final estimate: PPL = 5.4007 +/- 0.67339
-    ```
-
-    </details>
-
-- <details>
-    <summary>Measure KL divergence</summary>
-
-    ```bash
-    # TODO
-    ```
-
-    </details>
-
-[^1]: [https://huggingface.co/docs/transformers/perplexity](https://huggingface.co/docs/transformers/perplexity)
-
-## [`llama-bench`](tools/llama-bench)
-
-#### Benchmark the performance of the inference for various parameters.
-
-- <details open>
-    <summary>Run default benchmark</summary>
-
-    ```bash
-    llama-bench -m model.gguf
-
-    # Output:
-    # | model               |       size |     params | backend    | threads |          test |                  t/s |
-    # | ------------------- | ---------: | ---------: | ---------- | ------: | ------------: | -------------------: |
-    # | qwen2 1.5B Q4_0     | 885.97 MiB |     1.54 B | Metal,BLAS |      16 |         pp512 |      5765.41 ± 20.55 |
-    # | qwen2 1.5B Q4_0     | 885.97 MiB |     1.54 B | Metal,BLAS |      16 |         tg128 |        197.71 ± 0.81 |
-    #
-    # build: 3e0ba0e60 (4229)
-    ```
-
-    </details>
-
-## [`llama-simple`](examples/simple)
-
-#### A minimal example for implementing apps with `llama.cpp`. Useful for developers.
-
-- <details>
-    <summary>Basic text completion</summary>
-
-    ```bash
-    llama-simple -m model.gguf
-
-    # Hello my name is Kaitlyn and I am a 16 year old girl. I am a junior in high school and I am currently taking a class called "The Art of
-    ```
-
-    </details>
-
-
-## Contributing
-
-- Contributors can open PRs
-- Collaborators will be invited based on contributions
-- Maintainers can push to branches in the `llama.cpp` repo and merge PRs into the `master` branch
-- Any help with managing issues, PRs and projects is very appreciated!
-- See [good first issues](https://github.com/ggml-org/llama.cpp/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) for tasks suitable for first contributions
-- Read the [CONTRIBUTING.md](CONTRIBUTING.md) for more information
-- Make sure to read this: [Inference at the edge](https://github.com/ggml-org/llama.cpp/discussions/205)
-- A bit of backstory for those who are interested: [Changelog podcast](https://changelog.com/podcast/532)
-
-## Other documentation
-
-- [cli](tools/cli/README.md)
-- [completion](tools/completion/README.md)
-- [server](tools/server/README.md)
-- [GBNF grammars](grammars/README.md)
-
-#### Development documentation
-
-- [How to build](docs/build.md)
-- [Running on Docker](docs/docker.md)
-- [Build on Android](docs/android.md)
-- [Multi-GPU usage](docs/multi-gpu.md)
-- [Performance troubleshooting](docs/development/token_generation_performance_tips.md)
-- [GGML tips & tricks](https://github.com/ggml-org/llama.cpp/wiki/GGML-Tips-&-Tricks)
-
-#### Seminal papers and background on the models
-
-If your issue is with model generation quality, then please at least scan the following links and papers to understand the limitations of LLaMA models. This is especially important when choosing an appropriate model size and appreciating both the significant and subtle differences between LLaMA models and ChatGPT:
-- LLaMA:
-    - [Introducing LLaMA: A foundational, 65-billion-parameter large language model](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)
-    - [LLaMA: Open and Efficient Foundation Language Models](https://arxiv.org/abs/2302.13971)
-- GPT-3
-    - [Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)
-- GPT-3.5 / InstructGPT / ChatGPT:
-    - [Aligning language models to follow instructions](https://openai.com/research/instruction-following)
-    - [Training language models to follow instructions with human feedback](https://arxiv.org/abs/2203.02155)
-
-## XCFramework
-The XCFramework is a precompiled version of the library for iOS, visionOS, tvOS,
-and macOS. It can be used in Swift projects without the need to compile the
-library from source. For example:
-```swift
-// swift-tools-version: 5.10
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
-import PackageDescription
-
-let package = Package(
-    name: "MyLlamaPackage",
-    targets: [
-        .executableTarget(
-            name: "MyLlamaPackage",
-            dependencies: [
-                "LlamaFramework"
-            ]),
-        .binaryTarget(
-            name: "LlamaFramework",
-            url: "https://github.com/ggml-org/llama.cpp/releases/download/b5046/llama-b5046-xcframework.zip",
-            checksum: "c19be78b5f00d8d29a25da41042cb7afa094cbf6280a225abe614b03b20029ab"
-        )
-    ]
-)
-```
-The above example is using an intermediate build `b5046` of the library. This can be modified
-to use a different version by changing the URL and checksum.
-
-## Completions
-Command-line completion is available for some environments.
-
-#### Bash Completion
-```bash
-$ build/bin/llama-cli --completion-bash > ~/.llama-completion.bash
-$ source ~/.llama-completion.bash
-```
-Optionally this can be added to your `.bashrc` or `.bash_profile` to load it
-automatically. For example:
-```console
-$ echo "source ~/.llama-completion.bash" >> ~/.bashrc
+Manual recipe (verified: CUDA 13.1 + MSVC 19.44 + `sm_120a-real`):
+
+```bat
+call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+cmake -B build -G Ninja -DCMAKE_CUDA_COMPILER="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.1/bin/nvcc.exe" -DCMAKE_CUDA_ARCHITECTURES="120a-real" -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler" -DGGML_CUDA=ON -DGGML_CUDA_FA=ON -DGGML_CUDA_FA_ALL_QUANTS=ON -DGGML_CUDA_GRAPHS=ON -DGGML_NATIVE=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target llama-server llama-bench -j
 ```
 
-## Dependencies
+Full bilingual guide with troubleshooting: [`BUILD_GUIDE_RTX5080.md`](BUILD_GUIDE_RTX5080.md).
 
-- [yhirose/cpp-httplib](https://github.com/yhirose/cpp-httplib) - Single-header HTTP server, used by `llama-server` - MIT license
-- [stb-image](https://github.com/nothings/stb) - Single-header image format decoder, used by multimodal subsystem - Public domain
-- [nlohmann/json](https://github.com/nlohmann/json) - Single-header JSON library, used by various tools/examples - MIT License
-- [miniaudio.h](https://github.com/mackron/miniaudio) - Single-header audio format decoder, used by multimodal subsystem - Public domain
-- [subprocess.h](https://github.com/sheredom/subprocess.h) - Single-header process launching solution for C and C++ - Public domain
+## 🏗️ Build Provenance
+
+**This fork does NOT modify any core llama.cpp source file** (`src/`, `common/`, `ggml/` are 100% upstream). This repository adds Windows-specific tooling on top of the stock engine.
+
+- **Base:** llama.cpp upstream, commit `3018a11e7`
+- **CUDA Toolkit:** 13.1 (Blackwell-native kernels)
+- **Compiler:** MSVC 19.44 (VS2022 BuildTools) + `-allow-unsupported-compiler`
+- **Architecture:** `sm_120a-real` (native Blackwell PTX)
+- **Generator:** Ninja
+- **Key flags:** `GGML_CUDA=ON`, `GGML_CUDA_FA=ON`, `GGML_CUDA_FA_ALL_QUANTS=ON`, `GGML_CUDA_GRAPHS=ON`, `GGML_NATIVE=OFF`
+
+The binary is a **tuned instance** of the industrial standard: same engine code, native-hardware compilation. Not "hacked" code — **"tuned"** code.
+
+---
+
+# 🇪🇸 VERSIÓN EN ESPAÑOL
+
+## 🎯 ¿Qué es esto?
+
+Una distribución de llama.cpp **pensada para Windows, de doble clic y listo**, para NVIDIA RTX 5080 (Blackwell), con:
+
+- **Kernels nativos `sm_120a-real`** (CUDA 13.1) — el mismo motor, compilado para el silicio exacto.
+- **Decodificación especulativa MTP** (`draft-mtp n=2`) auto-detectada por el nombre del modelo — sin flags que recordar.
+- Un **dashboard C# ultra ligero** para setear todo visualmente, más un **modo headless CLI** para agentes y automatización.
+- Un **shim compatible con Ollama** para que apps de terceros (Open WebUI, Continue, offgrid, etc.) crean que hablan con un Ollama real.
+- **Búsqueda web Tavily** (proxy MCP) con la API key leída de una variable de entorno — nunca expuesta en archivos ni URLs.
+
+> [!IMPORTANT]
+> **Todos los números de este repo se lograron con el GGUF `Qwen3.6-35B-A3B` IQ3_XXS (3.44 bpw)** — la cuantización que cabe holgada en 16 GB de VRAM dejando espacio para el KV cache de contexto largo, y la que da las tasas de aceptación MTP más altas.
+
+## 🚀 ¿Por qué esta compilación custom? (Adiós a LM Studio)
+
+Los motores genéricos ejecutan binarios CUDA genéricos dentro de interfaces pesadas. Este fork apunta a **NVIDIA Blackwell (`sm_120a-real`)** a nivel PTX: instrucciones nativas de Tensor Cores, CUDA Graphs sin latencia de CPU, FlashAttention-3 Universal para todas las cuantizaciones y fijación automática de relojes GPU.
+
+| Métrica de Rendimiento | LM Studio | llama.cpp Estándar | **Custom Blackwell Build** |
+| :--- | :--- | :--- | :--- |
+| **Objetivo CUDA** | Genérico | Estándar | **Nativo `sm_120a-real` (Blackwell PTX)** |
+| **Fijación de Reloj GPU** | Dinámico | Manual | **Auto P-State Lock (3090 MHz / 14001 MHz)** ⚡ |
+| **FlashAttention-3** | Solo FP16 | FP16 / Parcial | **Universal FA3 (todas las GGUFs)** |
+| **Motor Especulativo** | Desactivado | Solo N-Gram | **Draft-MTP (`n=2`) + N-Gram** |
+| **Velocidad (35B)** | 56.80 t/s | 108.00 t/s | **146.3 t/s sostenido / 196 t/s ráfaga** |
+| **Prefill (IQ3)** | ~1,000 t/s | ~1,200 t/s | **~1,700 t/s (picos 2,196 t/s)** |
+
+## 🧩 Características Principales
+
+### 1. 🤖 Shim Compatible con Ollama (Middleware de Cero Overhead)
+`ollama_shim.js` escucha en el puerto **11434** (el de Ollama) y hace proxy transparente hacia `llama-server` en el **5050**. Las apps que solo hablan la API de Ollama — Open WebUI, Continue, offgrid, etc. — se conectan como si hubiera un Ollama real. Sin cambios de código de su lado.
+- **Integración Tavily**: el shim intercepta las llamadas a herramientas/funciones y las responde con resultados reales de búsqueda web de Tavily, dando internet en vivo a las apps agénticas sin configuración extra.
+
+![Shim - Proxy compatible con Ollama y Tavily](blakcwell_shim.jpg)
+
+### 2. 🌐 Acceso Directo por LAN vía Web UI de llama.cpp
+No necesitás el shim para acceso directo: la Web UI de `llama-server` queda en `http://<dispositivo>:5050` (y `http://<IP-LAN>:5050` si activás exposición LAN en el dashboard). Ideal para probar desde otro celular, tablet o máquina de tu red — incluyendo la búsqueda MCP de Tavily en la Web UI.
+
+### 3. 🔍 Búsqueda Web Tavily (MCP) — La API Key Nunca se Expone
+- Activada por defecto vía proxy MCP (`--ui-mcp-proxy`).
+- La key se lee de la variable de entorno **`TAVILY_API_KEY`** — nunca se escribe en archivos, configs ni URLs; el dashboard muestra solo sus últimos 6 caracteres.
+- Sin key configurada, todo sigue funcionando — solo sin búsqueda web.
+
+### 4. 🎛️ Dashboard C# Ultra Ligero (`launcher_gui.ps1`)
+Una GUI de Windows Forms donde seteas **todo** visualmente:
+
+![Dashboard](UI_dashboard_llama_ccp.jpg)
+
+- Selector de modelos (explora tus carpetas de GGUFs, muestra tamaño y capacidad MTP por modelo).
+- Contexto, capas GPU, slots paralelos, uBatch.
+- Tipo de KV cache (`q4_0` / `f16`) y **KV cache del draft** para MTP.
+- Sliders de sampling: temperature, top_p, top_k, min_p, presence y repeat penalties — los defaults son el **punto dulce testeado** (`temp 0.4`, `min_p 0.0`).
+- Toggle de exposición LAN y de Tavily.
+- **Recuerda la última elección** y **auto-setéa el MTP** cuando el modelo seleccionado tiene MTP en el nombre — la config más rápida con un clic.
+
+### 5. 💨 Huella de Recursos Mínima
+A diferencia de otros corredores de modelos (que mantienen frameworks pesados residentes), este flujo:
+1. Abre el dashboard liviano → elegís config → clic en **Lanzar**.
+2. El dashboard se cierra y **solo `llama-server` queda corriendo en una consola shell mínima**.
+3. Cero overhead de GUI durante el servicio: toda la VRAM/CPU va a la inferencia.
+
+Tenés la comodidad de una GUI al configurar y la liviandad de llama.cpp al ejecutar.
+
+### 6. 🤖 Modo Headless (para Agentes, Tests y Benchmarks)
+El mismo launcher funciona como **CLI/API** sin ninguna GUI:
+
+```powershell
+# Generar una configuración de lanzamiento (auto-detecta MTP por el nombre del modelo)
+powershell -File launcher_gui.ps1 -Headless -ModelPath "C:\models\Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf" -Ctx 131072 -Ngl 99 -Np 1 -Kv q4_0 -KvD default -Lan
+
+# Consultar estado / esperar a que el server esté listo
+powershell -File launcher_gui.ps1 -Headless -Status
+powershell -File launcher_gui.ps1 -Headless -WaitReady -Port 5050 -TimeoutSec 180
+```
+
+Esto abre la puerta a pipelines de CI/CD, harnesses de benchmark y agentes de IA que levantan el server y lo manejan con comandos simples.
+
+### 7. 🚀 Auto-Detección MTP y Sampling del "Punto Dulce"
+- El launcher lee el nombre/carpeta del modelo y activa `--spec-type draft-mtp --spec-draft-n-max 2` automáticamente si el modelo es MTP (ej. `Qwen3.6-35B-A3B-MTP-*`); si no, usa `ngram-map-k`.
+- Los defaults de sampling son el resultado de un test A/B controlado (8 corridas, 3 configs): `temp 0.4 + min_p 0.0` dio **2/2 carritos funcionales en menos de 4 minutos** en el workflow agéntico — ver `analisis_rendimiento_qwen35b.md`.
+
+## 🏆 Destacados de Benchmark (Qwen3.6-35B-A3B IQ3_XXS)
+
+| Métrica | Valor | Fuente |
+| :--- | :--- | :--- |
+| **Ráfaga de decode** | **196 t/s** | Pico en ráfaga corta (MTP) |
+| **Generación sostenida** | **146.3 t/s** (18,565 tokens) | Tarea 391, log de producción |
+| **Aceptación MTP** | **95.58%** (2.91 tokens/paso) | Tarea 1522 |
+| **Prefill** | **~1,700 t/s** (picos 2,196 t/s) | Prompt de 19,223 tokens |
+| **Workflow agéntico** | **3 min 54 s** landing page (36/36 checks) | 2026-08-03 |
+
+Metodología completa y logs por tarea: [`analisis_rendimiento_qwen35b.md`](analisis_rendimiento_qwen35b.md).
+
+## 📦 Inicio Rápido (Zero-Config, Doble Clic)
+
+1. Descargá `Llama-cpp-Blackwell-RTX5080-v1.6.0-portable-win-cuda13.1-x64.zip` desde [Releases](https://github.com/marbycore/llama_cpp_custom_for_5080_blackwell_windows/releases).
+2. Descomprimí en cualquier carpeta (funciona desde un pendrive).
+3. Doble clic en **`Llama-Server_RTX5080.bat`** (aceptá el aviso UAC para el bloqueo de relojes GPU).
+4. Elegí tu modelo en la GUI — incluso encuentra tus archivos `.gguf` por vos.
+5. Clic en **Lanzar**. Listo. Sin escribir un solo comando.
+
+## 🛠️ Compilación Desde Código Fuente
+
+¿Querés compilarlo vos mismo? Está todo acá:
+
+```powershell
+git clone https://github.com/marbycore/llama_cpp_custom_for_5080_blackwell_windows.git <RUTA_REPO>
+cd <RUTA_REPO>
+powershell -ExecutionPolicy Bypass -File compilar_para_5080.ps1
+```
+
+Receta manual (verificada: CUDA 13.1 + MSVC 19.44 + `sm_120a-real`):
+
+```bat
+call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+cmake -B build -G Ninja -DCMAKE_CUDA_COMPILER="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.1/bin/nvcc.exe" -DCMAKE_CUDA_ARCHITECTURES="120a-real" -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler" -DGGML_CUDA=ON -DGGML_CUDA_FA=ON -DGGML_CUDA_FA_ALL_QUANTS=ON -DGGML_CUDA_GRAPHS=ON -DGGML_NATIVE=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target llama-server llama-bench -j
+```
+
+Guía completa bilingüe con troubleshooting: [`BUILD_GUIDE_RTX5080.md`](BUILD_GUIDE_RTX5080.md).
+
+## 🏗️ Procedencia de la Compilación
+
+**Este fork NO modifica ningún archivo core de llama.cpp** (`src/`, `common/`, `ggml/` son 100% upstream). El repositorio agrega tooling específico de Windows sobre el motor estándar.
+
+- **Base:** llama.cpp upstream, commit `3018a11e7`
+- **CUDA Toolkit:** 13.1 (kernels nativos Blackwell)
+- **Compilador:** MSVC 19.44 (VS2022 BuildTools) + `-allow-unsupported-compiler`
+- **Arquitectura:** `sm_120a-real` (PTX Blackwell nativo)
+- **Generador:** Ninja
+- **Flags clave:** `GGML_CUDA=ON`, `GGML_CUDA_FA=ON`, `GGML_CUDA_FA_ALL_QUANTS=ON`, `GGML_CUDA_GRAPHS=ON`, `GGML_NATIVE=OFF`
+
+El binario es una **instancia ajustada** del estándar industrial: mismo código del motor, compilación nativa de hardware. No es código "modificado" — es código **"ajustado"**.
