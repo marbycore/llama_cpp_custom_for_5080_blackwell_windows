@@ -221,3 +221,9 @@ descargar_binario_oficial_1070_test.ps1
 
 # Estado de lanzamiento generado (contiene rutas locales del usuario)
 /launch_state.json
+
+# Archivos temporales de debug (no committear)
+/bat_test_*.bat
+/bat_debug_*.log
+/test_*.log
+/llama_bat_debug.log
