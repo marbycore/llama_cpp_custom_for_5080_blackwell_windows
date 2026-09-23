@@ -1,7 +1,14 @@
 # Extensions
 
 *.a
-*.bat
+# *.bat  # Desactivado: los scripts de lanzamiento Blackwell deben ser trackeados
+# Excepciones explícitas de .bat del upstream que SÍ deben trackearse:
+!/Llama-Server_RTX5080.bat
+!/optimizar_gpu_5080.bat
+!/restaurar_gpu_5080.bat
+!/compilar_para_5080.ps1
+!/compilar_para_5080.bat
+config_server.json
 *.bin
 *.d
 *.dll
@@ -22,7 +29,9 @@
 *.tmp
 *.DS_Store
 
-# IDE / OS
+# Benchmark local / Privacidad
+benchmarks/
+*.zip
 
 /.cache/
 /.ccls-cache/
@@ -43,7 +52,8 @@
 
 /tags
 /.build/
-/build*
+/build/
+/build*/
 /release
 /debug
 /libllama.so
@@ -153,3 +163,72 @@ a.out.*
 
 AGENTS.local.md
 .pi/SYSTEM.md
+
+# ═══════════════════════════════════════════════════════════════
+# Blackwell Custom Project — Exclusiones Personalizadas
+# ═══════════════════════════════════════════════════════════════
+
+# Archivos de test y artifacts locales (no portables, no van en release)
+/RESULTADO_RAW.txt
+/RESULTADO_REAL.txt
+/test_capture.txt
+/model_list.txt
+/final_test_output.json
+/test_request.json
+/test_result.json
+/smoke_test_gui.py
+/test_server.py
+/test_shim.js
+/test_compat.ps1
+/verify_all.py
+/verify_e2e.py
+/bench_hermes.py
+/append_telemetry.ps1
+/sync_hermes.ps1
+test_final_read*.ps1
+descargar_binario_oficial_1070_test.ps1
+
+# Carpetas de distribución antiguas (los releases van en GitHub Releases, no en el árbol)
+/dist_v*/
+/dist/
+
+# Release ZIPs (ídem — deben publicarse como assets de GitHub Release)
+*.zip
+
+# Logs generados en tiempo de ejecución
+/shim_debug.log
+
+
+# Editor / herramientas locales
+/.kilo/
+/update_to_do.md
+/ROADMAP-es-en.md
+
+# Scripts de test GTX1070 (scripts descargadores y de build local, no portables sin ajuste manual)
+/compilar_para_1070.ps1
+/descargar_binario_oficial_1070.ps1
+/launcher_gui_1070.ps1
+/test_selector.bat
+/START_QWEN36_MTP.bat
+
+# Excepciones explícitas de documentación
+!/BUILD_GUIDE_RTX5080.md
+
+# Carpetas temporales de distribución
+/dist_temp/
+
+
+# Carpetas temporales de benchmarks locales
+/pruebas_speed/
+
+# Estado de lanzamiento y configs locales generadas (contienen rutas locales y secrets)
+/launch_state.json
+/llama_webui_config.json
+/model_profiles.json
+*.jpg
+
+# Archivos temporales de debug (no committear)
+/bat_test_*.bat
+/bat_debug_*.log
+/test_*.log
+/llama_bat_debug.log
